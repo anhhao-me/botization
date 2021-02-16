@@ -3,3 +3,4 @@ package-lock.json
 data/
 tmp/
 .nyc_output/
+.env

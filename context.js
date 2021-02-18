@@ -1,6 +1,7 @@
 const vm = require('vm');
 const logger = require('./logger');
-const cron  = require('node-cron');
+const cron = require('node-cron');
+const unirest = require('unirest');
 
 module.exports = () => {
   const context = vm.createContext({
@@ -14,7 +15,8 @@ module.exports = () => {
         }
       }));
     },
-    log: logger.info
+    log: logger.info,
+    get: unirest.get
   });
 
   return context;

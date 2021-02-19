@@ -22,7 +22,7 @@ const create = name => {
   const script = new vm.Script(fs.readFileSync(path.join(BOT_DIR, name)));
   bot.script = script;
 
-  const context = createContext();
+  const context = createContext(name);
   bot.context = context;
   
   try {

@@ -3,7 +3,7 @@ const logger = require('./logger');
 const cron = require('node-cron');
 const unirest = require('unirest');
 
-module.exports = () => {
+module.exports = name => {
   const context = vm.createContext({
     _crons: [],
     schedule(expression, fn){ 
@@ -15,7 +15,9 @@ module.exports = () => {
         }
       }));
     },
-    log: logger.info,
+    log(msg){
+      logger.info(`${name} - ${msg}`);
+    },
     get: unirest.get
   });
 

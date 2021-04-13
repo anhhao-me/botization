@@ -1,14 +1,12 @@
-require('../config');
-
 const { expect } = require('chai');
-const createContext = require('../context');
+const createContext = require('../src/context');
 const vm = require('vm');
 
 describe('Context test', () => {
   let context;
 
   beforeEach(() => {
-    context = createContext();
+    context = createContext('test');
   });
 
   afterEach(() => {

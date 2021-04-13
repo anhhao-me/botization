@@ -1,71 +1,41 @@
-require('./config');
+require('dotenv').config();
 
-const debug = require('debug')('botization:index');
-const vm = require('vm');
-const fs = require('fs');
-const path = require('path');
+const load = require('./src/load');
+const sandbox = require('./src/sandbox');
+const logger = require('./src/logger');
+const manageState = require('./src/state');
+const Report = require('./src/report');
+const Server = require('./src/server');
 
-const logger = require('./logger');
-const Watch = require('./watch');
-const createContext = require('./context');
-const { BOT_DIR } = process.env;
+const { BOT_DIR, PORT } = process.env;
+const bots = load(BOT_DIR).map(sandbox);
 
-const watcher = Watch(BOT_DIR);
-const bots = {};
-
-const create = name => {
-  debug(`Real create ${name}`);
-
-  const bot = {};
-  bots[name] = bot;
-
-  const script = new vm.Script(fs.readFileSync(path.join(BOT_DIR, name)));
-  bot.script = script;
-
-  const context = createContext(name);
-  bot.context = context;
-  
-  try {
-    script.runInContext(context);
-  } catch(err){
-    logger.error(err);
-  }
-}
-
-const remove = name => {
-  debug(`Real remove ${name}`);
-
-  const bot = bots[name];
-  for (let cron of bot.context._crons){
-    cron.destroy();
-  }
-
-  delete bots[name];
-}
-
-watcher.on('create', name => {
-  debug(`Create ${name}`);
-  create(name);
-});
-
-watcher.on('change', name => {
-  debug(`Change ${name}`);
-  remove(name);
-  create(name);
-});
-
-watcher.on('remove', name => {
-  debug(`Remove ${name}`);
-  remove(name);
-});
-
-watcher.load();
+const onStateChange = manageState(bots, Report(Server(PORT)));
 
 module.exports = {
-  stop(){
-    for (let name in bots)
-      remove(name);
+  async start(){
+    for (let bot of bots){
+      try {
+        await bot.start(onStateChange);
+      } catch(err){
+        logger.error(err);
+      }
+    }
+  },
 
-    watcher.close();
+  async stop(){
+    for (let bot of bots){
+      try {
+        await bot.stop();
+      } catch(err){
+        logger.error(err);
+      }
+    }
+
+    process.exit(1);
   }
+}
+
+if (require.main === module) {
+  module.exports.start();
 }

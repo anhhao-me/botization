@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botization Web Monitoring</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    h1 {
+      font-weight: bold;
+    }
+
+    .state {
+      font-weight: bold;
+    }
+
+    .state[state="m-error"] {
+      color: #c62828;
+    }
+
+    .state[state="s-error"] {
+      color: #E91E63;
+    }
+
+    .state[state="idle"] {
+      color: #2E7D32;
+    }
+
+    .state[state="running"] {
+      color: #1565C0;
+    }
+
+    .state[state="stopped"] {
+      color: #424242;
+    }
+
+    @keyframes bgAnim {
+      0% {
+        background-color: #DCEDC8;
+      }
+
+      50% {
+        background-color: #DCEDC8;
+      }
+
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    tr[updated] {
+      animation: bgAnim 1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-3">
+    <h1>Botization Web Monitoring</h1>
+    <div id="report"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script>
+    const reportElm = document.getElementById('report');
+    const socket = io();
+
+    let lastData = [];
+
+    socket.on('report', data => {
+      let html = '<table class="table"><tr><th>Name</th><th>State</th><th>Updated At</th></tr>';
+      for (let bot of data){
+        let lastBot;
+        for (let i of lastData)
+          if (i.name === bot.name)
+            lastBot = i;
+
+        let updated = 
+          lastBot ? 
+            (lastBot.state !== bot.state || lastBot.updatedAt !== bot.updatedAt)
+            : true;
+
+        html += `<tr ${updated ? 'updated' : ''}>
+          <td class="name">${bot.name}</td>
+          <td class="state" state="${bot.state}">${bot.state}</td>
+          <td class="time">${moment(bot.updatedAt).format('YYYY-MM-DD HH:mm:ss')}</td>
+        </tr>`;
+      }
+      html += '</table>';
+
+      reportElm.innerHTML = html;
+      lastData = data;
+    });
+  </script>
+</body>
+</html>

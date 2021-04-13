@@ -4,3 +4,4 @@ data/
 tmp/
 .nyc_output/
 .env
+.report

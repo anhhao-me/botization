@@ -1,11 +1,12 @@
 {
   "name": "botization",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "DEBUG=botization:* nodemon index",
     "serve": "DEBUG=botization:* node index",
+    "monitor": "watch cat .report",
     "test": "NODE_ENV=test DEBUG=botization:* mocha",
     "coverage": "nyc npm run test"
   },
@@ -21,7 +22,9 @@
   "dependencies": {
     "debug": "^4.3.1",
     "dotenv": "^8.2.0",
+    "moment": "^2.29.1",
     "node-cron": "^2.0.3",
+    "socket.io": "^4.0.1",
     "unirest": "^0.6.0",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4"

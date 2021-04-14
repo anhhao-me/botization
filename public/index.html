@@ -68,6 +68,7 @@
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/2.0.2/timeago.min.js"></script>
   <script>
     const reportElm = document.getElementById('report');
     const socket = io();
@@ -75,7 +76,12 @@
     let lastData = [];
 
     socket.on('report', data => {
-      let html = '<table class="table"><tr><th>Name</th><th>State</th><th>Updated At</th></tr>';
+      let html = `<table class="table"><tr>
+        <th>Name</th>
+        <th>State</th>
+        <th class="time">Updated At</th>
+        <th class="time">Uptime</th>
+      </tr>`;
       for (let bot of data){
         let lastBot;
         for (let i of lastData)
@@ -91,6 +97,7 @@
           <td class="name">${bot.name}</td>
           <td class="state" state="${bot.state}">${bot.state}</td>
           <td class="time">${moment(bot.updatedAt).format('YYYY-MM-DD HH:mm:ss')}</td>
+          <td class="time">${timeago().format(bot.createdAt)}</td>
         </tr>`;
       }
       html += '</table>';

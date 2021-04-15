@@ -7,6 +7,7 @@ const crypto = require('crypto');
 
 module.exports = name => {
   const context = vm.createContext({
+    // system methods
     _crons: [],
     setState: new Function(),
     schedule(expression, fn){ 
@@ -43,14 +44,16 @@ module.exports = name => {
 
       logger[type](`${name} > ${msg}`);
     },
+    // http methods
     get: unirest.get,
+    http: unirest,
     URL,
+    // crypto methods
     hash(text){
       const al = crypto.createHash('sha256');
       al.update(text);
       return al.digest('hex');
-    },
-    setTimeout: setTimeout
+    }
   });
 
   return context;

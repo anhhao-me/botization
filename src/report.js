@@ -19,7 +19,26 @@ module.exports = server => {
 
   return output => {
     isReport = true;
-    lastOutput = output;
+    lastOutput = {
+      id: 'bot-state',
+      title: 'Bot State',
+      type: 'table',
+      columns: ['name', 'state', 'updated at'],
+      data: output.map(item => ([ 
+        item.name, 
+        { 
+          style: `font-weight: bold; color: ` + (
+            item.state === 'm-error' ? '#c62828' 
+            : item.state === 's-error' ? '#E91E63'
+            : item.state === 'idle' ? '#2E7D32'
+            : item.state === 'running' ? '#1565C0'
+            : '#424242')
+          ,
+          text: item.state 
+        }, 
+        moment(item.updatedAt).format('MMM DD - HH:mm') 
+      ]))
+    };
 
     fs.writeFileSync('./.report', 
       output.map(item => `${item.name}\t\t: ${item.state} [${moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss')}]`)

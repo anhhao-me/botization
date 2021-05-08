@@ -4,8 +4,15 @@ const cron = require('node-cron');
 const unirest = require('unirest');
 const { URL } = require('url');
 const crypto = require('crypto');
+const moment = require('moment');
 
-module.exports = name => {
+module.exports = (name, server) => {
+  const lastReport = {};
+  server.on('connection', socket => {
+    for (let key in lastReport)
+      socket.emit('report', lastReport[key]);
+  });
+
   const context = vm.createContext({
     // system methods
     _crons: [],
@@ -44,6 +51,10 @@ module.exports = name => {
 
       logger[type](`${name} > ${msg}`);
     },
+    report(r){
+      lastReport[r.id] = r;
+      server.io.emit('report', r);
+    },
     // http methods
     get: unirest.get,
     http: unirest,
@@ -53,7 +64,9 @@ module.exports = name => {
       const al = crypto.createHash('sha256');
       al.update(text);
       return al.digest('hex');
-    }
+    },
+    // utils
+    moment
   });
 
   return context;

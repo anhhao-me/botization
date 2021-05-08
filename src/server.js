@@ -19,8 +19,12 @@ module.exports = PORT => {
   });
 
   io.on('connection', socket => {
-    if (_event['connection']){
-      _event['connection'](socket);
+    if (!_event['connection']){
+      _event['connection'] = [];
+    }
+
+    for (let event of _event['connection']){
+      event(socket);
     }
   });
 
@@ -31,7 +35,9 @@ module.exports = PORT => {
   return {
     io,
     on: (name, fn) => {
-      _event[name] = fn;
+      if (!_event[name])
+        _event[name] = []
+      _event[name].push(fn);
     }
   }
 }

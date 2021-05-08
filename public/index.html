@@ -12,98 +12,108 @@
   <style>
     body {
       font-family: 'Quicksand', sans-serif;
+      background-color: #fafafa;
+      font-size: 10pt;
     }
 
     h1 {
       font-weight: bold;
+      font-size: 18pt;
     }
 
-    .state {
-      font-weight: bold;
+    #report-wrapper {
+      margin: -.5em;
     }
 
-    .state[state="m-error"] {
-      color: #c62828;
+    .report {
+      padding: .5em;
     }
 
-    .state[state="s-error"] {
-      color: #E91E63;
+    .report .report-title {
+      margin-bottom: .5em;
     }
 
-    .state[state="idle"] {
-      color: #2E7D32;
-    }
-
-    .state[state="running"] {
-      color: #1565C0;
-    }
-
-    .state[state="stopped"] {
-      color: #424242;
-    }
-
-    @keyframes bgAnim {
-      0% {
-        background-color: #DCEDC8;
-      }
-
-      50% {
-        background-color: #DCEDC8;
-      }
-
-      100% {
-        background-color: transparent;
-      }
-    }
-
-    tr[updated] {
-      animation: bgAnim 1s;
+    .report .report-content {
+      box-shadow: 0 0 .2em rgba(0, 0, 0, .2);
+      padding: .8em;
+      border-radius: .2em;
+      background-color: white;
     }
   </style>
 </head>
 <body>
-  <div class="container py-3">
-    <h1>Botization Web Monitoring</h1>
-    <div id="report"></div>
+  <div class="container-fluid py-3">
+    <h1>Botization Dashboard</h1>
+    <div id="report-wrapper" class="row my-3"></div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/2.0.2/timeago.min.js"></script>
+  <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
   <script>
-    const reportElm = document.getElementById('report');
     const socket = io();
+    const root = document.getElementById('report-wrapper');
 
-    let lastData = [];
+    const widgets = {
+      table(src){
+        let html = `<table class="table table-bordered mb-0"><tr>`;
+        for (let col of src.columns){
+          html += `<th>${col}</th>`;
+        }
+        html += '</tr>'
+        for (let row of src.data){
+          html += '<tr>';
+          for (let i = 0; i < src.columns.length; i++){
+            let cell = row[i];
+            let col = src.columns[i];
+            let text;
+            let style;
+
+            if (typeof cell === 'object'){
+              text = cell.text;
+              style = cell.style;
+            } else {
+              text = cell;
+            }
+
+            html += `<td style="${style}">${text}</td>`;
+          }   
+          html += '</tr>';
+        }
+
+        html += '</table>';
+
+        return html;
+      }
+    }
 
     socket.on('report', data => {
-      let html = `<table class="table"><tr>
-        <th>Name</th>
-        <th>State</th>
-        <th class="time">Updated At</th>
-        <th class="time">Uptime</th>
-      </tr>`;
-      for (let bot of data){
-        let lastBot;
-        for (let i of lastData)
-          if (i.name === bot.name)
-            lastBot = i;
+      let elm = document.getElementById(`report-${data.id}`);
+      if (!elm){
+        elm = document.createElement('div');
+        elm.id = `report-${data.id}`;
+        elm.className = `report col col-12 col-md-6 col-lg-4`;
+        elm.innerHTML = `<div class="report-title">${data.title || data.id}</div><div class="report-content"></div>`;
 
-        let updated = 
-          lastBot ? 
-            (lastBot.state !== bot.state || lastBot.updatedAt !== bot.updatedAt)
-            : true;
-
-        html += `<tr ${updated ? 'updated' : ''}>
-          <td class="name">${bot.name}</td>
-          <td class="state" state="${bot.state}">${bot.state}</td>
-          <td class="time">${moment(bot.updatedAt).format('YYYY-MM-DD HH:mm:ss')}</td>
-          <td class="time">${timeago().format(bot.createdAt)}</td>
-        </tr>`;
+        root.appendChild(elm);
       }
-      html += '</table>';
 
-      reportElm.innerHTML = html;
-      lastData = data;
+      let content = elm.getElementsByClassName('report-content')[0];
+      content.innerHTML = widgets[data.type](data);
+
+      reTope();
+    });
+
+    function reTope(){
+      var elem = document.querySelector('#report-wrapper');
+      var iso = new Isotope( elem, {
+        // options
+        itemSelector: '.report'
+      });
+    }
+
+    window.addEventListener('load', () => {
+      reTope();
     });
   </script>
 </body>

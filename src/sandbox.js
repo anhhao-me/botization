@@ -2,7 +2,7 @@ const vm = require('vm');
 const createContext = require('./context');
 
 module.exports = bot => {
-  bot.start = function(onStateChange = new Function()){
+  bot.start = function(onStateChange = new Function(), server){
     // state management
     this._state = 'preparing';
     Object.defineProperty(this, 'state', {
@@ -17,7 +17,7 @@ module.exports = bot => {
     this.state = 'running';
 
     // context in bot
-    const context = createContext(this.name);
+    const context = createContext(this.name, server);
     context.setState = state => this.state = state;
     this.context = context;
 

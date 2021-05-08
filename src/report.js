@@ -23,7 +23,7 @@ module.exports = server => {
       id: 'bot-state',
       title: 'Bot State',
       type: 'table',
-      columns: ['name', 'state', 'updated at'],
+      columns: ['name', 'state'],
       data: output.map(item => ([ 
         item.name, 
         { 
@@ -35,9 +35,9 @@ module.exports = server => {
             : '#424242')
           ,
           text: item.state 
-        }, 
-        moment(item.updatedAt).format('MMM DD - HH:mm') 
-      ]))
+        }
+      ])),
+      updatedAt: new Date()
     };
 
     fs.writeFileSync('./.report', 

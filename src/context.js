@@ -52,7 +52,10 @@ module.exports = (name, server) => {
       logger[type](`${name} > ${msg}`);
     },
     report(r){
-      lastReport[r.id] = r;
+      lastReport[r.id] = Object.assign({}, {
+        type: 'raw',
+        updatedAt: new Date()
+      }, r);
       server.io.emit('report', r);
     },
     // http methods

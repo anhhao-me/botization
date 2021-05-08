@@ -19,6 +19,7 @@
     h1 {
       font-weight: bold;
       font-size: 18pt;
+      margin-bottom: 0;
     }
 
     #report-wrapper {
@@ -44,7 +45,7 @@
 <body>
   <div class="container-fluid py-3">
     <h1>Botization Dashboard</h1>
-    <div id="report-wrapper" class="row my-3"></div>
+    <div id="report-wrapper" class="row my-2"></div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
@@ -69,7 +70,7 @@
             let text;
             let style;
 
-            if (typeof cell === 'object'){
+            if (typeof cell === 'object' && cell !== null && cell !== undefined){
               text = cell.text;
               style = cell.style;
             } else {
@@ -84,6 +85,9 @@
         html += '</table>';
 
         return html;
+      },
+      raw(src){
+        return JSON.stringify(src);
       }
     }
 
@@ -93,13 +97,21 @@
         elm = document.createElement('div');
         elm.id = `report-${data.id}`;
         elm.className = `report col col-12 col-md-6 col-lg-4`;
-        elm.innerHTML = `<div class="report-title">${data.title || data.id}</div><div class="report-content"></div>`;
+        elm.innerHTML = `<div class="d-flex justify-content-between">
+            <div class="report-title font-weight-bold">${data.title || data.id}</div>
+            <div class="uptime"></div>
+          </div>
+          <div class="report-content"></div>`;
 
         root.appendChild(elm);
       }
 
       let content = elm.getElementsByClassName('report-content')[0];
       content.innerHTML = widgets[data.type](data);
+
+      let uptime = elm.getElementsByClassName('uptime')[0];
+      uptime.innerHTML = timeago().format(data.updatedAt);
+      uptime.setAttribute('startAt', data.updatedAt);
 
       reTope();
     });
@@ -115,6 +127,14 @@
     window.addEventListener('load', () => {
       reTope();
     });
+
+    setInterval(() => {
+      const uptimes = document.getElementsByClassName('uptime');
+      for (let elm of uptimes){
+        let startAt = elm.getAttribute('startAt');
+        elm.innerHTML = timeago().format(startAt);
+      }
+    }, 1000 * 60); // every minutes
   </script>
 </body>
 </html>

@@ -56,7 +56,8 @@ module.exports = (name, server) => {
         type: 'raw',
         updatedAt: new Date()
       }, r);
-      server.io.emit('report', r);
+      
+      server.io.emit('report', lastReport[r.id]);
     },
     // http methods
     get: unirest.get,
